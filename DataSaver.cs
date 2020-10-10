@@ -4,12 +4,21 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-public interface ISaveable {
+
+public abstract class ISaveable<T> {
+    public void SaveData(string path) {
+        DataSaver.SaveData<T>(path, this);
+    }
+    public T LoadData(string path) {        
+        var temp = DataSaver.LoadData<T>(path);
+        return temp == null ? GetDefault() : temp;        
+    }
+    public abstract T GetDefault();
 }
 
 public class DataSaver 
 {
-    public static void SaveData<T>(string path, T data) {
+    public static void SaveData<T>(string path, ISaveable<T> data) {
         BinaryFormatter bf = new BinaryFormatter();
         FileStream file = File.Create(path);
         bf.Serialize(file, data);
@@ -33,4 +42,13 @@ public class DataSaver
             return default(T);
         }
     }
+
+    public static void SaveData<T>(string path, T data)
+    {
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Create(path);
+        bf.Serialize(file, data);
+        file.Close();
+    }
+   
 }
